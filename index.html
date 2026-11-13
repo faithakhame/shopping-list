@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Pantry Party — a fun little stock tracker and shopping list for your kitchen and home." />
+  <title>Pantry Party 🛒 Stock &amp; Shopping List</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛒</text></svg>" />
+</head>
+<body>
+  <div class="page">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-badge" aria-hidden="true">🛒</div>
+        <div class="brand-text">
+          <h1>Pantry Party</h1>
+          <p class="tagline">Track what you've got and remember what you need — for the kitchen &amp; the whole home.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat stat-items">
+          <span class="stat-icon" aria-hidden="true">🧺</span>
+          <div>
+            <strong id="statItems">0</strong>
+            <span>items tracked</span>
+          </div>
+        </div>
+        <div class="stat stat-low">
+          <span class="stat-icon" aria-hidden="true">⚠️</span>
+          <div>
+            <strong id="statLow">0</strong>
+            <span>running low</span>
+          </div>
+        </div>
+        <div class="stat stat-value">
+          <span class="stat-icon" aria-hidden="true">💰</span>
+          <div>
+            <strong id="statValue">$0.00</strong>
+            <span>stock value</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button class="tab is-active" id="tabStock" data-tab="stock" type="button" role="tab" aria-selected="true" aria-controls="stockPanel">
+        🧺 My Stock <span class="tab-count" id="stockCount">0</span>
+      </button>
+      <button class="tab" id="tabShopping" data-tab="shopping" type="button" role="tab" aria-selected="false" aria-controls="shoppingPanel">
+        📝 Shopping List <span class="tab-count" id="shopCount">0</span>
+      </button>
+    </nav>
+
+    <main class="panels">
+      <section class="panel" id="stockPanel" role="tabpanel" aria-labelledby="tabStock">
+        <form class="card form-card" id="itemForm" autocomplete="off">
+          <div class="card-head">
+            <h2 id="formTitle">Add something to your stock</h2>
+            <span class="hint" id="formHint">Name, price and how many you have.</span>
+          </div>
+          <div class="form-grid">
+            <label class="field field-name">
+              <span>Item name</span>
+              <input id="itemName" name="name" type="text" placeholder="e.g. Milk, dish soap, rice…" required maxlength="60" />
+            </label>
+            <label class="field">
+              <span>Where</span>
+              <select id="itemCategory" name="category">
+                <option value="cooking">🍳 Cooking</option>
+                <option value="home">🏠 Home</option>
+              </select>
+            </label>
+            <label class="field">
+              <span>Price ($)</span>
+              <input id="itemPrice" name="price" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal" />
+            </label>
+            <label class="field">
+              <span>How many?</span>
+              <input id="itemQty" name="qty" type="number" min="0" step="1" value="1" required inputmode="numeric" />
+            </label>
+            <label class="field">
+              <span>Low at</span>
+              <input id="itemLow" name="lowAt" type="number" min="0" step="1" value="1" inputmode="numeric" title="Show a low-stock warning when the quantity drops to this number" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit" id="submitBtn">➕ Add to stock</button>
+            <button class="btn btn-ghost hidden" type="button" id="cancelEdit">Cancel edit</button>
+          </div>
+        </form>
+
+        <div class="toolbar">
+          <label class="search">
+            <span aria-hidden="true">🔍</span>
+            <input id="searchInput" type="search" placeholder="Search your stock…" aria-label="Search your stock" />
+          </label>
+          <div class="filters" id="filters" role="group" aria-label="Filter stock">
+            <button class="filter is-active" data-filter="all" type="button">All</button>
+            <button class="filter" data-filter="cooking" type="button">🍳 Cooking</button>
+            <button class="filter" data-filter="home" type="button">🏠 Home</button>
+            <button class="filter" data-filter="low" type="button">⚠️ Low stock</button>
+          </div>
+        </div>
+
+        <div class="item-grid" id="stockList"></div>
+        <div class="empty-state hidden" id="stockEmpty"></div>
+      </section>
+
+      <section class="panel hidden" id="shoppingPanel" role="tabpanel" aria-labelledby="tabShopping">
+        <div class="card low-card" id="lowCard">
+          <div class="card-head">
+            <h2>⚠️ Running low</h2>
+            <button class="btn btn-mini" type="button" id="addAllLow">Add all to list</button>
+          </div>
+          <div class="low-list" id="lowList"></div>
+        </div>
+
+        <form class="card form-card" id="shopForm" autocomplete="off">
+          <div class="card-head">
+            <h2>Add to the shopping list</h2>
+            <span class="hint">Anything you need to buy — even things that aren't in your stock.</span>
+          </div>
+          <div class="form-grid shop-grid">
+            <label class="field field-name">
+              <span>What do you need?</span>
+              <input id="shopName" type="text" placeholder="e.g. Bread, light bulbs…" required maxlength="60" />
+            </label>
+            <label class="field">
+              <span>How many?</span>
+              <input id="shopQty" type="number" min="1" step="1" value="1" required inputmode="numeric" />
+            </label>
+            <label class="field">
+              <span>Price each ($)</span>
+              <input id="shopPrice" type="number" min="0" step="0.01" placeholder="0.00" inputmode="decimal" />
+            </label>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-primary" type="submit">🛒 Add to list</button>
+          </div>
+        </form>
+
+        <div class="card list-card">
+          <div class="card-head">
+            <h2>Your shopping list</h2>
+            <span class="hint" id="shopHint">Tick things off as you shop.</span>
+          </div>
+          <ul class="shop-list" id="shopList"></ul>
+          <div class="empty-state hidden" id="shopEmpty"></div>
+          <div class="shop-summary hidden" id="shopSummary">
+            <div class="totals">
+              <span class="total-label">Estimated total</span>
+              <strong id="shopTotal">$0.00</strong>
+              <span class="total-sub" id="shopMeta">0 items</span>
+            </div>
+            <div class="summary-actions">
+              <button class="btn btn-success" type="button" id="restockBtn">✅ Restock checked</button>
+              <button class="btn btn-ghost" type="button" id="clearDoneBtn">🧹 Clear checked</button>
+              <button class="btn btn-ghost danger-text" type="button" id="clearAllBtn">🗑️ Clear all</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span>💾 Everything saves automatically in this browser — refresh away!</span>
+      <span class="footer-sep" aria-hidden="true">·</span>
+      <span>Made for happy shelves.</span>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="confetti-layer" id="confetti" aria-hidden="true"></div>
+
+  <dialog class="confirm-dialog" id="confirmDialog">
+    <form method="dialog">
+      <h2 id="confirmTitle">Are you sure?</h2>
+      <p id="confirmText"></p>
+      <div class="dialog-actions">
+        <button class="btn btn-ghost" type="submit" value="cancel">Cancel</button>
+        <button class="btn btn-danger" type="submit" value="confirm" id="confirmBtn">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="script.js"></script>
+</body>
+</html>
